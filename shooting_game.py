@@ -11,18 +11,17 @@ BLUE = (0, 0, 255)
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 400
 
-# --- Classes
+# Classes
  
  
 class Block(pygame.sprite.Sprite):
     """ This class represents the block. """
-    def __init__(self, color):
+    def __init__(self):
         # Call the parent class (Sprite) constructor
         super().__init__()
  
-        self.image = pygame.Surface([15, 15])
-        self.image.fill(color)
- 
+        self.image = self.image = pygame.transform.scale(pygame.image.load("assets/asteroid.png"), [25, 25])
+
         self.rect = self.image.get_rect()
  
  
@@ -34,15 +33,14 @@ class Player(pygame.sprite.Sprite):
         # Call the parent class (Sprite) constructor
         super().__init__()
  
-        self.image = pygame.Surface([20, 20])
-        self.image.fill(RED)
+        # Load and resize shooter
+        self.image = pygame.transform.scale(pygame.image.load("assets/shooter.png"), [100, 100])
  
         self.rect = self.image.get_rect()
  
         # Set speed vector
         self.vx = 0
         self.vy = 0
-
 
     def set_pos(self, x, y):
         self.x = x
@@ -69,7 +67,7 @@ class Bullet(pygame.sprite.Sprite):
  
         # Set up the image for the bullet
         self.image = pygame.Surface([8, 8])
-        self.image.fill(BLACK)
+        self.image.fill(RED)
  
         self.rect = self.image.get_rect()
  
@@ -82,6 +80,8 @@ class Bullet(pygame.sprite.Sprite):
 
 
     def set_pos(self, x, y):
+        """Set the bullet's position to
+         the center of the player's postiion"""
         self.x = x
         self.y = y
         self.rect.x = self.x - self.rect.w / 2
@@ -103,7 +103,7 @@ class Game():
         
         self.shooting = False
         self.fire_timer = 0
-        self.fire_time_limit = 8
+        self.fire_time_limit = 6
 
         # List of each block in the game
         self.blocks = pygame.sprite.Group()
@@ -113,7 +113,7 @@ class Game():
         
         for i in range(50):
             # This represents a block
-            block = Block(BLUE)
+            block = Block()
         
             # Set a random location for the block
             block.rect.x = random.randrange(SCREEN_WIDTH)
@@ -122,7 +122,7 @@ class Game():
             # Add the block to the list of objects
             self.blocks.add(block)
         
-        # Create a red player block
+        # Create player and set position to middle of screen
         self.player = Player()
         self.player.set_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
@@ -138,6 +138,9 @@ class Game():
 
 
     def fire_bullets(self):
+        """Fire bullets based on a fire timer
+        and tells the bullet where to go"""
+
         if self.fire_timer < self.fire_time_limit:
             self.fire_timer += 1
         else:
@@ -182,26 +185,30 @@ class Game():
                     self.blocks.remove(block)
                     self.score += 1
             
-        self.screen.fill(WHITE)
+        self.screen.fill(BLACK)
     
         # Draw all the spites
-        self.bullets.draw(self.screen)
+
         self.blocks.draw(self.screen)
+        self.bullets.draw(self.screen)
         self.players.draw(self.screen)
 
         pygame.display.flip()
     
 
     def handle_input(self):
+        """Takes user input and determines
+        the velocity of the player as well
+        as whether to shoot bullets"""
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    self.player.vx = -3
+                    self.player.vx = -3            
                 elif event.key == pygame.K_RIGHT:
                     self.player.vx = 3
-                
                 if event.key == pygame.K_UP:
                     self.player.vy = -3
                 elif event.key == pygame.K_DOWN:
@@ -212,17 +219,17 @@ class Game():
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     self.player.vx = 0
-                elif event.key == pygame.K_RIGHT:
+                if event.key == pygame.K_RIGHT:
                     self.player.vx = 0
-                elif event.key == pygame.K_UP:
+                if event.key == pygame.K_UP:
                     self.player.vy = 0
-                elif event.key == pygame.K_DOWN:
+                if event.key == pygame.K_DOWN:
                     self.player.vy = 0
 
                 self.shooting = False
+            
 
-
-# -------- Main Program Loop -----------
+# Main Program Loop
 game = Game()
 
 while game.running:
