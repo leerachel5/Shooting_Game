@@ -13,18 +13,35 @@ SCREEN_HEIGHT = 400
 
 # Classes
  
+
  
 class Block(pygame.sprite.Sprite):
     """ This class represents the block. """
     def __init__(self):
         # Call the parent class (Sprite) constructor
         super().__init__()
+
+        self.pos = pygame.math.Vector2(0, 0)
+        self.v = pygame.math.Vector2(0, 0)
  
         self.image = self.image = pygame.transform.scale(pygame.image.load("assets/asteroid.png"), [25, 25])
 
         self.rect = self.image.get_rect()
- 
- 
+
+    def set_pos(self, x, y):
+        self.pos.xy = x, y
+        self.rect.x = self.pos.x - self.rect.w / 2
+        self.rect.y = self.pos.y - self.rect.h / 2
+
+    def update(self):
+        """ Find a new position for the player"""
+        self.set_pos(self.pos.x + self.v.x, self.pos.y + self.v.y)
+
+        
+
+
+
+
 class Player(pygame.sprite.Sprite):
     """ This class represents the Player. """
  
@@ -39,18 +56,18 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
  
         # Set speed vector
-        self.vx = 0
-        self.vy = 0
+        self.pos = pygame.math.Vector2(0, 0)
+
+        self.v = pygame.math.Vector2(0, 0)
 
     def set_pos(self, x, y):
-        self.x = x
-        self.y = y
-        self.rect.x = self.x - self.rect.w / 2
-        self.rect.y = self.y - self.rect.h / 2
+        self.pos.xy = x, y
+        self.rect.x = self.pos.x - self.rect.w / 2
+        self.rect.y = self.pos.y - self.rect.h / 2
 
     def update(self):
         """ Find a new position for the player"""
-        self.set_pos(self.x + self.vx, self.y + self.vy)
+        self.set_pos(self.pos.x + self.v.x, self.pos.y + self.v.y)
 
  
 class Bullet(pygame.sprite.Sprite):
@@ -72,25 +89,22 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
  
         # Move the bullet to our starting location
+        self.pos = pygame.math.Vector2(x, y)
         self.set_pos(x, y)
  
         speed = 3
-        self.vx = speed * vx
-        self.vy = speed * vy
+        self.v = pygame.math.Vector2(speed * vx, speed * vy)
 
 
     def set_pos(self, x, y):
-        """Set the bullet's position to
-         the center of the player's postiion"""
-        self.x = x
-        self.y = y
-        self.rect.x = self.x - self.rect.w / 2
-        self.rect.y = self.y - self.rect.h / 2
+        self.pos.xy = x, y
+        self.rect.x = self.pos.x - self.rect.w / 2
+        self.rect.y = self.pos.y - self.rect.h / 2
 
- 
+
     def update(self):
-        """ Move the bullet. """
-        self.set_pos(self.x + self.vx, self.y + self.vy)
+        """ Find a new position for the player"""
+        self.set_pos(self.pos.x + self.v.x, self.pos.y + self.v.y)
  
 
 class Game():
@@ -111,17 +125,46 @@ class Game():
         # List of each bullet
         self.bullets = pygame.sprite.Group()
         
-        for i in range(50):
+        for i in range(3):
             # This represents a block
             block = Block()
         
             # Set a random location for the block
-            block.rect.x = random.randrange(SCREEN_WIDTH)
-            block.rect.y = random.randrange(SCREEN_HEIGHT - 50)
-        
+            block.set_pos(random.randrange(-25, 0), random.randrange(SCREEN_HEIGHT))
+
             # Add the block to the list of objects
             self.blocks.add(block)
+
+        for i in range(3):
+            # This represents a block
+            block = Block()
         
+            # Set a random location for the block
+            block.set_pos(random.randrange(700 , 725), random.randrange(SCREEN_HEIGHT))
+
+            # Add the block to the list of objects
+            self.blocks.add(block)
+
+        for i in range(3):
+            # This represents a block
+            block = Block()
+        
+            # Set a random location for the block
+            block.set_pos(random.randrange(SCREEN_WIDTH), random.randrange(-25, 0))
+
+            # Add the block to the list of objects
+            self.blocks.add(block)
+
+        for i in range(3):
+            # This represents a block
+            block = Block()
+        
+            # Set a random location for the block
+            block.set_pos(random.randrange(SCREEN_WIDTH), random.randrange(400, 425))
+
+            # Add the block to the list of objects
+            self.blocks.add(block)
+   
         # Create player and set position to middle of screen
         self.player = Player()
         self.player.set_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
@@ -148,14 +191,18 @@ class Game():
 
             # Create the bullet based on where we are, and where we want to go.
             bullet = Bullet(
-                self.player.x, self.player.y,
-                self.player.vx, self.player.vy
+                self.player.pos.x, self.player.pos.y,
+                self.player.v.x, self.player.v.y
             )
 
             # Add the bullet to the lists
             self.bullets.add(bullet)
         
-
+    def update_blocks_velocity(self):
+        
+        for block in self.blocks:
+            new_v = self.player.pos - block.pos
+            block.v = 0.4 * new_v.normalize()
 
     def update(self):
         self.clock.tick(60)
@@ -168,6 +215,8 @@ class Game():
         self.blocks.update()
         self.player.update()
         self.bullets.update()
+
+        self.update_blocks_velocity()
  
         # Calculate mechanics for each bullet
         for bullet in self.bullets:
@@ -175,9 +224,9 @@ class Game():
             block_hit_list = pygame.sprite.spritecollide(bullet, self.blocks, True)
     
             # For each block hit, remove the bullet and add to the score
-            if bullet.y < -10 or bullet.y > SCREEN_HEIGHT:
+            if bullet.pos.y < -10 or bullet.pos.y > SCREEN_HEIGHT:
                 self.bullets.remove(bullet)
-            elif bullet.x < -10 or bullet.x > SCREEN_WIDTH:
+            elif bullet.pos.x < -10 or bullet.pos.x > SCREEN_WIDTH:
                 self.bullets.remove(bullet)
             else:
                 for block in block_hit_list:
@@ -206,25 +255,25 @@ class Game():
                 self.running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    self.player.vx = -3            
+                    self.player.v.x = -3            
                 elif event.key == pygame.K_RIGHT:
-                    self.player.vx = 3
+                    self.player.v.x = 3
                 if event.key == pygame.K_UP:
-                    self.player.vy = -3
+                    self.player.v.y = -3
                 elif event.key == pygame.K_DOWN:
-                    self.player.vy = 3
+                    self.player.v.y = 3
 
                 self.shooting = True
 
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
-                    self.player.vx = 0
+                    self.player.v.x = 0
                 if event.key == pygame.K_RIGHT:
-                    self.player.vx = 0
+                    self.player.v.x = 0
                 if event.key == pygame.K_UP:
-                    self.player.vy = 0
+                    self.player.v.y = 0
                 if event.key == pygame.K_DOWN:
-                    self.player.vy = 0
+                    self.player.v.y = 0
 
                 self.shooting = False
             
