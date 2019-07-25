@@ -13,8 +13,6 @@ SCREEN_HEIGHT = 400
 
 # Classes
  
-
- 
 class Block(pygame.sprite.Sprite):
     """ This class represents the block. """
     def __init__(self):
@@ -36,10 +34,6 @@ class Block(pygame.sprite.Sprite):
     def update(self):
         """ Find a new position for the player"""
         self.set_pos(self.pos.x + self.v.x, self.pos.y + self.v.y)
-
-        
-
-
 
 
 class Player(pygame.sprite.Sprite):
@@ -136,33 +130,24 @@ class Game():
             self.blocks.add(block)
 
         for i in range(3):
-            # This represents a block
             block = Block()
-        
-            # Set a random location for the block
+
             block.set_pos(random.randrange(700 , 725), random.randrange(SCREEN_HEIGHT))
 
-            # Add the block to the list of objects
             self.blocks.add(block)
 
         for i in range(3):
-            # This represents a block
             block = Block()
         
-            # Set a random location for the block
             block.set_pos(random.randrange(SCREEN_WIDTH), random.randrange(-25, 0))
 
-            # Add the block to the list of objects
             self.blocks.add(block)
 
         for i in range(3):
-            # This represents a block
             block = Block()
         
-            # Set a random location for the block
             block.set_pos(random.randrange(SCREEN_WIDTH), random.randrange(400, 425))
 
-            # Add the block to the list of objects
             self.blocks.add(block)
    
         # Create player and set position to middle of screen
@@ -175,9 +160,14 @@ class Game():
         self.running = True
 
         self.score = 0
+        self.lives = 3
         
         # Used to manage how fast the screen updates
         self.clock = pygame.time.Clock()
+
+        self.font = pygame.font.Font(None, 36)
+
+        self.game_over = False
 
 
     def fire_bullets(self):
@@ -233,7 +223,23 @@ class Game():
                     self.bullets.remove(bullet)
                     self.blocks.remove(block)
                     self.score += 1
-            
+
+        # Calculate mechanics for each block collision
+        for player in self.players:
+            # See if it hit a block
+            player_hit_list = pygame.sprite.spritecollide(player, self.blocks, True)
+    
+            # For each block hit, remove the bullet and add to the score
+            for block in player_hit_list:
+                self.blocks.remove(block)
+                self.lives -= 1
+
+                if self.lives == 0:
+                    self.game_over = True
+
+                    if self.game_over:
+                        pass
+
         self.screen.fill(BLACK)
     
         # Draw all the spites
@@ -243,8 +249,8 @@ class Game():
         self.players.draw(self.screen)
 
         pygame.display.flip()
-    
 
+        
     def handle_input(self):
         """Takes user input and determines
         the velocity of the player as well
