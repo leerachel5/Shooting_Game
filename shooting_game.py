@@ -1,8 +1,6 @@
 import pygame
 import random
 import math
-import pygame, sys
-from pygame.locals import *
  
 # Define some colors
 BLACK = (0, 0, 0)
@@ -140,37 +138,6 @@ class Game():
         # List of each bullet
         self.bullets = pygame.sprite.Group()
         
-        for i in range(3):
-            # This represents a block
-            block = Block()
-        
-            # Set a random location for the block
-            block.set_pos(random.randrange(-25, 0), random.randrange(SCREEN_HEIGHT))
-
-            # Add the block to the list of objects
-            self.blocks.add(block)
-
-        for i in range(3):
-            block = Block()
-
-            block.set_pos(random.randrange(700 , 725), random.randrange(SCREEN_HEIGHT))
-
-            self.blocks.add(block)
-
-        for i in range(3):
-            block = Block()
-        
-            block.set_pos(random.randrange(SCREEN_WIDTH), random.randrange(-25, 0))
-
-            self.blocks.add(block)
-
-        for i in range(3):
-            block = Block()
-        
-            block.set_pos(random.randrange(SCREEN_WIDTH), random.randrange(400, 425))
-
-            self.blocks.add(block)
-        
         # Create hearts and set position
         self.heart1 = Heart()
 
@@ -205,6 +172,40 @@ class Game():
 
         self.game_over = False
 
+    def create_blocks(self):
+        
+        for i in range(3):
+            # This represents a block
+            block = Block()
+        
+            # Set a random location for the block
+            block.set_pos(random.randrange(-25, 0), random.randrange(SCREEN_HEIGHT))
+
+            # Add the block to the list of objects
+            self.blocks.add(block)
+
+        for i in range(3):
+            block = Block()
+
+            block.set_pos(random.randrange(700 , 725), random.randrange(SCREEN_HEIGHT))
+
+            self.blocks.add(block)
+
+        for i in range(3):
+            block = Block()
+        
+            block.set_pos(random.randrange(SCREEN_WIDTH), random.randrange(-25, 0))
+
+            self.blocks.add(block)
+
+        for i in range(3):
+            block = Block()
+        
+            block.set_pos(random.randrange(SCREEN_WIDTH), random.randrange(400, 425))
+
+            self.blocks.add(block)
+            
+            break
 
     def fire_bullets(self):
         """Fire bullets based on a fire timer
@@ -234,6 +235,9 @@ class Game():
         self.clock.tick(60)
 
         self.handle_input()
+
+        if len(self.blocks) % 12 == 0:
+            self.create_blocks()
 
         if self.shooting:
             self.fire_bullets()
