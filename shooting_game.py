@@ -1,6 +1,8 @@
 import pygame
 import random
 import math
+import pygame, sys
+from pygame.locals import *
  
 # Define some colors
 BLACK = (0, 0, 0)
@@ -12,7 +14,23 @@ SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 400
 
 # Classes
- 
+
+class Heart(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+
+        self.pos = pygame.math.Vector2(0, 0)
+
+        self.image = pygame.transform.scale(pygame.image.load("assets/heart.png"), (40, 40))
+
+        self.rect = self.image.get_rect()
+
+    def set_pos(self, x, y):
+        self.pos.xy = x, y
+        self.rect.x = self.pos.x - self.rect.w / 2
+        self.rect.y = self.pos.y - self.rect.h / 2
+
+
 class Block(pygame.sprite.Sprite):
     """ This class represents the block. """
     def __init__(self):
@@ -22,7 +40,7 @@ class Block(pygame.sprite.Sprite):
         self.pos = pygame.math.Vector2(0, 0)
         self.v = pygame.math.Vector2(0, 0)
  
-        self.image = self.image = pygame.transform.scale(pygame.image.load("assets/asteroid.png"), [25, 25])
+        self.image = pygame.transform.scale(pygame.image.load("assets/asteroid.png"), [25, 25])
 
         self.rect = self.image.get_rect()
 
@@ -45,7 +63,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
  
         # Load and resize shooter
-        self.image = pygame.transform.scale(pygame.image.load("assets/shooter.png"), [100, 100])
+        self.image = pygame.transform.scale(pygame.image.load("assets/shooter.png"), [80, 55])
  
         self.rect = self.image.get_rect()
  
@@ -108,10 +126,13 @@ class Game():
         self.screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 
         self.players = pygame.sprite.Group()
-        
+
         self.shooting = False
         self.fire_timer = 0
         self.fire_time_limit = 6
+
+        # List of each heart in the game
+        self.hearts = pygame.sprite.Group()
 
         # List of each block in the game
         self.blocks = pygame.sprite.Group()
@@ -149,6 +170,21 @@ class Game():
             block.set_pos(random.randrange(SCREEN_WIDTH), random.randrange(400, 425))
 
             self.blocks.add(block)
+        
+        # Create hearts and set position
+        self.heart1 = Heart()
+
+        self.heart1.set_pos(23, 23)
+
+        self.heart2 = Heart()
+
+        self.heart2.set_pos(63, 23)
+
+        self.heart3 = Heart()
+        
+        self.heart3.set_pos(103, 23)
+
+        self.hearts.add(self.heart1, self.heart2, self.heart3)
    
         # Create player and set position to middle of screen
         self.player = Player()
@@ -234,11 +270,13 @@ class Game():
                 self.blocks.remove(block)
                 self.lives -= 1
 
-                if self.lives == 0:
+                if self.lives == 2:
+                    self.hearts.remove(self.heart3)
+                elif self.lives == 1:
+                    self.hearts.remove(self.heart2)
+                elif self.lives == 0:
+                    self.hearts.remove(self.heart1)
                     self.game_over = True
-
-                    if self.game_over:
-                        pass
 
         self.screen.fill(BLACK)
     
@@ -247,8 +285,32 @@ class Game():
         self.blocks.draw(self.screen)
         self.bullets.draw(self.screen)
         self.players.draw(self.screen)
+        self.hearts.draw(self.screen)
 
         pygame.display.flip()
+
+        basicfont = pygame.font.SysFont(None, 48)
+        text = basicfont.render('SCORE:' + str(self.score), True, (WHITE), (BLACK))
+        textrect = text.get_rect()
+        textrect.x = 530
+        textrect.y = 13
+
+        self.screen.blit(text, textrect)
+
+        pygame.display.update()
+
+        if self.game_over:
+            for block in self.blocks:
+                self.blocks.remove(block)
+            for player in self.players:
+                self.players.remove(player)
+            for bullet in self.bullets:
+                self.bullets.remove(bullet)
+            
+            bg = pygame.image.load("assets/game_over.jpg")
+            self.screen.blit(bg, (-80, -70))
+
+            pygame.display.update()
 
         
     def handle_input(self):
