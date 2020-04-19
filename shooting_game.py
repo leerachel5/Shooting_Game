@@ -127,7 +127,7 @@ class Game():
 
         self.shooting = False
         self.fire_timer = 0
-        self.fire_time_limit = 6
+        self.fire_time_limit = 5
 
         # List of each heart in the game
         self.hearts = pygame.sprite.Group()
@@ -229,7 +229,7 @@ class Game():
         
         for block in self.blocks:
             new_v = self.player.pos - block.pos
-            block.v = 0.4 * new_v.normalize()
+            block.v = 0.7 * new_v.normalize()
 
     def update(self):
         self.clock.tick(60)
@@ -327,13 +327,13 @@ class Game():
                 self.running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    self.player.v.x = -3            
+                    self.player.v.x = -4          
                 elif event.key == pygame.K_RIGHT:
-                    self.player.v.x = 3
+                    self.player.v.x = 4
                 if event.key == pygame.K_UP:
-                    self.player.v.y = -3
+                    self.player.v.y = -4
                 elif event.key == pygame.K_DOWN:
-                    self.player.v.y = 3
+                    self.player.v.y = 4
 
                 self.shooting = True
 
