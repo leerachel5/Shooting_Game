@@ -1,7 +1,9 @@
 import pygame
 import random
 import math
- 
+
+pygame.display.set_caption("Space Shooter")
+
 # Define some colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -291,6 +293,7 @@ class Game():
         self.players.draw(self.screen)
         self.hearts.draw(self.screen)
 
+        pygame.display.set_caption("Space Shooter")
         pygame.display.flip()
 
         basicfont = pygame.font.SysFont(None, 48)
